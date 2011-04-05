@@ -1,0 +1,10 @@
+name: Yoharnu's IPGET
+main: org.yoharnu.IPGet.IPGet
+versioni: 0.1
+author: Yoharnu
+commands:
+   ip:
+    description: Shows a player's IP.
+    usage: |
+           /ip <player>
+	   Example: /ip Player - Gives back Player's IP.
