@@ -1,6 +1,6 @@
 name: Yoharnu's IPGET
 main: org.yoharnu.IPGet.IPGet
-versioni: 0.1
+versioni: 0.2
 author: Yoharnu
 commands:
    ip:
