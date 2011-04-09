@@ -4,9 +4,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.entity.Player;
 
 import com.nijiko.permissions.PermissionHandler;
-import com.nijikokun.bukkit.Permissions.*;
 
-public class IPPermissions extends Permissions {
+public class IPPermissions {
 	private static PermissionHandler permissions;
 
 	public IPPermissions(IPGet plugin) {
