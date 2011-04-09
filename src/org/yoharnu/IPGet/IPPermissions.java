@@ -15,9 +15,17 @@ public class IPPermissions extends Permissions {
 			permissions = ((com.nijikokun.bukkit.Permissions.Permissions) theYetiPermissions).getHandler();
 		}
 	}
-	public boolean canGetIP(Player player){
+	public boolean canGetSelf(Player player){
 		if (permissions != null){
-            return permissions.has(player, "IPGet.getIP");
+            return permissions.has(player, "IPGet.self");
+		}
+        else{
+            return player.isOp();
+        }
+	}
+	public boolean canGetOther(Player player){
+		if (permissions != null){
+            return permissions.has(player, "IPGet.other");
 		}
         else{
             return player.isOp();
