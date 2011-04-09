@@ -1,8 +1,8 @@
 name: Yoharnu's IPGET
 main: org.yoharnu.IPGet.IPGet
-versioni: 0.2
+versioni: 0.3
 author: Yoharnu
-permissions: IPGet.IPGet for all IP permissions (plan to change in 0.3)
+permissions: IPGet.IPGet for all IP permissions (plan to change in 0.4)
 commands:
    ip:
     description: Shows a player's IP.
