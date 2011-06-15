@@ -29,8 +29,6 @@ public class IPPlayerListener extends PlayerListener {
 			try {
 				configFile.createNewFile();
 			} catch (IOException e) {}
-		FileOutputStream out;
-		PrintStream p;// = new PrintStream(out);
 		FileInputStream fstream = null;
 		try {
 			fstream = new FileInputStream(configFile);
@@ -44,6 +42,8 @@ public class IPPlayerListener extends PlayerListener {
 				tempFile += in.readLine() + newline;
 			}
 		} catch (IOException e1) {}
+		FileOutputStream out;
+		PrintStream p;
 		try {
 			out = new FileOutputStream(configFile);
 			p = new PrintStream(out);

@@ -2,6 +2,11 @@
 package org.yoharnu.IPGet;
 
 // Imports
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -52,6 +57,7 @@ public class IPGet extends JavaPlugin {
 	
 	
 
+	@SuppressWarnings("deprecation")
 	public boolean onCommand(CommandSender sender, Command cmd,
 			String commandLabel, String[] args) {
 		String[] trimmedArgs = args;
@@ -80,7 +86,29 @@ public class IPGet extends JavaPlugin {
 							}
 						}
 						else{
-							sender.sendMessage(ChatColor.YELLOW + "That player is not online.");
+							//sender.sendMessage(ChatColor.YELLOW + "That player is not online.");
+							File configFile = new File(this.getDataFolder(), "logs/" + trimmedArgs[0] + ".log");
+							if(!configFile.exists()){
+								sender.sendMessage(ChatColor.YELLOW + "No such player.");
+							}
+							else{
+								FileInputStream fstream = null;
+								try {
+									fstream = new FileInputStream(configFile);
+								} catch (FileNotFoundException e1) {}
+								DataInputStream in = new DataInputStream(fstream);
+								String lastIP = "";
+								String newline = System.getProperty("line.separator");
+								try {
+									while (in.available() !=0)
+									{
+										lastIP = in.readLine() + newline;
+									}
+								} catch (IOException e1) {}
+								sender.sendMessage(ChatColor.YELLOW + "That player is not online.");
+								sender.sendMessage(ChatColor.YELLOW + "Last known IP:");
+								sender.sendMessage(lastIP);
+							}
 						}
 					}
 					else if(args.length==0 && permissions.canGetSelf(player)){
