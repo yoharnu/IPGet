@@ -1,0 +1,16 @@
+name: IPGet
+main: org.yoharnu.IPGet.IPGet
+version: 0.6
+author: Yoharnu (0.6 by Hretsam)
+commands:
+   ip:
+    description: Shows a player's IP.
+    usage: /ip [player]
+
+   iplist:
+    description: Shows a list of all ip's the player used.
+    usage: /iplist <player>
+
+   ipusers:
+    description: Shows a list of all users that use the same ip as the given user
+    usage: /ipusers <player>
