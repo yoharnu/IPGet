@@ -3,6 +3,9 @@ package org.yoharnu.IPGet;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.bukkit.util.config.Configuration;
 
@@ -16,6 +19,7 @@ public class FileHandler {
     private static final String filename = "players.yml";
     /** Loaded userfilelog */
     private Configuration userlog;
+    private static IIPComparator comparator;
 
     public FileHandler(File datafolder) throws IOException {
         // Checks if directory already exists
@@ -34,24 +38,34 @@ public class FileHandler {
         userlog = new Configuration(userLogFile);
         // Loads the file 
         userlog.load();
+
+        //inits the comparator
+        comparator = new IIPComparator();
     }
 
     /**
      * Adds the ip to the user's IP list
      * @param username
      * @param ip
-     * @param dateString 
+     * @param datelong 
      */
-    public void addIp(String username, String ip, long dateString) {
+    public void addIp(String username, String ip, long datelong) {
         ip = formatIP(ip);
 
         // Makes sure it wont mistake the ip for nodes in the yml file
         ip = ip.replaceAll("\\.", "_");
 
-        // Sets the ip (use the ip node for future adding of other nodes
-        userlog.setProperty("users." + username + ".ip." + ip, dateString);
-        // Saves file
-        userlog.save();
+        // Gets the old date value
+        long oldDateLong = Long.valueOf(userlog.getString("users." + username + ".ip." + ip, "0"));
+
+        // Check if new date is actually more new then the old value
+        if (datelong > oldDateLong) {
+            // Sets the ip (use the ip node for future adding of other nodes
+            userlog.setProperty("users." + username + ".ip." + ip, datelong);
+            // Saves file
+            userlog.save();
+        }
+
     }
 
     /**
@@ -60,7 +74,7 @@ public class FileHandler {
      * @param forceCaseCheck (use this when your not sure the casing is right)
      * @return 
      */
-    public ArrayList<IIP> getUserIplist(String username, boolean forceCaseCheck) {
+    public ArrayList<IIP> getUserIplist(String username, boolean forceCaseCheck, int maxSize) {
         if (forceCaseCheck) {
             username = checkCaseIndependant(username);
         }
@@ -77,8 +91,11 @@ public class FileHandler {
             iplist.add(new IIP(ip, Long.parseLong(userlog.getString("users." + username + ".ip." + ip, "0"))));
 
         }
+
+        Collections.sort(iplist, comparator);
+
         // return the list
-        return iplist;
+        return new ArrayList<IIP>(iplist.subList(0, (iplist.size() < maxSize ? iplist.size() : maxSize)));
     }
 
     /**
@@ -163,12 +180,24 @@ public class FileHandler {
     public boolean isUserAlreadyLogged(String username) {
         // Get all ip's
         List<String> keys = userlog.getKeys("users");
-        
+
         // Checks if the username is in the list
         if (keys.contains(username)) {
             return true;
         }
         // if not in the list, return false
         return false;
+    }
+}
+
+class IIPComparator implements Comparator<IIP> {
+
+    @Override
+    public int compare(IIP o1, IIP o2) {
+        if (o1.getDateLong() < o2.getDateLong()) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }

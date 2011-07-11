@@ -1,0 +1,35 @@
+
+---
+
+## Version of the config file, do not touch
+configversion: 2
+
+## Permissions node:
+## These can be used with or without the permissions plugin
+## set to something you like (for example 'gills.admin') to make use it in Permissions
+## set it to 'none' to disable the node
+## set it to 'all' to make the node available to all users
+## set it to 'op' to make the node available to op's
+## the warning has an extra option 'server' where the warning is only printed to the server
+
+## This node is to get information about yourself.
+## Like your own ip, or connected accounts to own ip address
+self node: IPGet.self
+## This node is to get information about someone else
+other node: IPGet.other
+## Node to get the warning messages
+warning node: IPGet.warning
+
+## This is the maximum size of the iplist (for command /iplist)
+max iplist size: 6
+
+## Sends a warning to all players with the warning node and the server.
+## The warning will only be send if the player's ip is used by multiple accountsx
+warn on first join: true
+
+## Syntax on how the data is printed
+## See folling website for more info: http://download.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html
+date syntax: dd-MMM-yyyy HH:mm
+    
+    
+...

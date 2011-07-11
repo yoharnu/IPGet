@@ -56,7 +56,7 @@ public class IPGet extends JavaPlugin {
         } catch (IOException ex) {
             writelog("Cannot open filehandler! " + ex.getMessage(), true);
         }
-        
+
         // Starts the configuration handler
         try {
             config = new IPGetConfig(this.getDataFolder());
@@ -66,6 +66,12 @@ public class IPGet extends JavaPlugin {
 
         // Set plugin reference
         plugin = this;
+
+        // Check if there are still old logs
+        if (Converter.hasOldFiles(this.getDataFolder())) {
+            // Convert old logs
+            Converter.convert(getDataFolder());
+        }
 
         // Print that the plugin has been enabled!
         writelog(pdfFile.getName() + " version "
@@ -167,7 +173,7 @@ public class IPGet extends JavaPlugin {
                         player.sendMessage("*** Player not online ***");
 
                         // Get UserIplist with the users, where ignoring the case
-                        ArrayList<IIP> iplist = getFilehandler().getUserIplist(args[0], true);
+                        ArrayList<IIP> iplist = getFilehandler().getUserIplist(args[0], true, getConfig().getMaxIpListSize());
                         // See if got results
                         if (iplist != null && iplist.size() > 0) {
                             // Got results, print
@@ -189,7 +195,7 @@ public class IPGet extends JavaPlugin {
                     }
 
                     // Get list
-                    ArrayList<IIP> iplist = getFilehandler().getUserIplist(targetPlayer.getName(), false);
+                    ArrayList<IIP> iplist = getFilehandler().getUserIplist(targetPlayer.getName(), false, getConfig().getMaxIpListSize());
 
                     // Print results, (dont need extra null check, as the player is logged in)
                     player.sendMessage("Listing ip's which " + targetPlayer.getName() + " to login:");
@@ -220,11 +226,31 @@ public class IPGet extends JavaPlugin {
                         ArrayList<String> userlist = getFilehandler().getIpUserList(args[0]);
                         // Check if any results
                         if (userlist != null && userlist.size() > 0) {
-                            //Results found, printing
+                            // Results found, printing
                             player.sendMessage("Listing users with the ip '" + FileHandler.formatIP(args[0]) + "':");
+
+                            // String builder 
+                            StringBuilder sb = new StringBuilder().append(ChatColor.YELLOW);
+                            // Loop trough all names in the list
                             for (String name : userlist) {
-                                player.sendMessage(ChatColor.YELLOW + name);
+
+                                // Checks if there should be a , added
+                                if (sb.length() > 0) {
+                                    sb.append(", ");
+                                }
+                                // Checks the length of the string, to make sure no data is lost
+                                if (sb.length() + 2 + name.length() > 280) {
+                                    // List to long, print results and reset list
+                                    player.sendMessage(sb.toString());
+                                    sb = new StringBuilder().append(ChatColor.YELLOW).append(name);
+                                } else {
+                                    // String length is ok, append name
+                                    sb.append(name);
+                                }
+
                             }
+                            // Print the rest of the string
+                            player.sendMessage(sb.toString());
                         } else {
                             // No results, printing message
                             player.sendMessage(ChatColor.YELLOW + "IP not found!");
@@ -246,7 +272,7 @@ public class IPGet extends JavaPlugin {
                         player.sendMessage("*** Player not online ***");
 
                         // Get list with ip's , where ignoring the case
-                        ArrayList<IIP> iplist = getFilehandler().getUserIplist(args[0], true);
+                        ArrayList<IIP> iplist = getFilehandler().getUserIplist(args[0], true, getConfig().getMaxIpListSize());
                         // Check if list is not empty
                         if (iplist != null && iplist.size() > 0) {
                             // Loop trough all ip's
@@ -255,9 +281,28 @@ public class IPGet extends JavaPlugin {
                                 ArrayList<String> userlist = getFilehandler().getIpUserList(ipp.getIp());
                                 // There is atleast one, so no need for null check, print results
                                 player.sendMessage("Listing users with the ip '" + FileHandler.formatIP(targetPlayer.getAddress().toString()) + "':");
+                                // String builder 
+                                StringBuilder sb = new StringBuilder().append(ChatColor.YELLOW);
+                                // Loop trough all names in the list
                                 for (String name : userlist) {
-                                    player.sendMessage(ChatColor.YELLOW + name);
+
+                                    // Checks if there should be a , added
+                                    if (sb.length() > 0) {
+                                        sb.append(", ");
+                                    }
+                                    // Checks the length of the string, to make sure no data is lost
+                                    if (sb.length() + 2 + name.length() > 280) {
+                                        // List to long, print results and reset list
+                                        player.sendMessage(sb.toString());
+                                        sb = new StringBuilder().append(ChatColor.YELLOW).append(name);
+                                    } else {
+                                        // String length is ok, append name
+                                        sb.append(name);
+                                    }
+
                                 }
+                                // Print the rest of the string
+                                player.sendMessage(sb.toString());
                             }
                         } else {
                             // Player not found
@@ -276,9 +321,29 @@ public class IPGet extends JavaPlugin {
                     ArrayList<String> userlist = getFilehandler().getIpUserList(targetPlayer.getAddress().toString());
                     // Will always have at least one (target itself) so no need for null check, Print results
                     player.sendMessage("Listing users with the ip '" + FileHandler.formatIP(targetPlayer.getAddress().toString()) + "':");
+
+                    // String builder 
+                    StringBuilder sb = new StringBuilder().append(ChatColor.YELLOW);
+                    // Loop trough all names in the list
                     for (String name : userlist) {
-                        player.sendMessage(ChatColor.YELLOW + name);
+
+                        // Checks if there should be a , added
+                        if (sb.length() > 0) {
+                            sb.append(", ");
+                        }
+                        // Checks the length of the string, to make sure no data is lost
+                        if (sb.length() + 2 + name.length() > 280) {
+                            // List to long, print results and reset list
+                            player.sendMessage(sb.toString());
+                            sb = new StringBuilder().append(ChatColor.YELLOW).append(name);
+                        } else {
+                            // String length is ok, append name
+                            sb.append(name);
+                        }
+
                     }
+                    // Print the rest of the string
+                    player.sendMessage(sb.toString());
                 } else {
                     // Invalid amount of arguments, print out usage message
                     sender.sendMessage(ChatColor.YELLOW + "Usage: /ipusers [player]");
@@ -286,8 +351,177 @@ public class IPGet extends JavaPlugin {
                 return true;
             }
         } else {
-            // Block server commands
-            sender.sendMessage("You cannot execute that command from the console.");
+            
+            //------------------------------------------------------------------------------------------------------------
+            // Is a server command
+
+            if (commandName.equalsIgnoreCase("iplist")) {
+                // Check arguments length
+                if (args.length == 1) {
+                    // Get player
+                    Player targetPlayer = getServer().getPlayer(args[0]);
+                    // See if player exits
+                    if (targetPlayer == null) {
+                        // Player doesn't exist
+
+                        //Print message
+                        writelog("*** Player not online ***", false);
+
+                        // Get UserIplist with the users, where ignoring the case
+                        ArrayList<IIP> iplist = getFilehandler().getUserIplist(args[0], true, getConfig().getMaxIpListSize());
+                        // See if got results
+                        if (iplist != null && iplist.size() > 0) {
+                            // Got results, print
+                            writelog("Listing ip's which " + args[0] + " to login:", false);
+                            for (IIP iip : iplist) {
+                                writelog(iip.getIp() + " on '" + iip.getDateString() + "'", false);
+                            }
+                        } else {
+                            // No result
+                            writelog("Player not found!", false);
+                        }
+                        return true;
+                    }
+
+                    // Get list
+                    ArrayList<IIP> iplist = getFilehandler().getUserIplist(targetPlayer.getName(), false, getConfig().getMaxIpListSize());
+
+                    // Print results, (dont need extra null check, as the player is logged in)
+                    writelog("Listing ip's which " + targetPlayer.getName() + " to login:", false);
+                    for (IIP iip : iplist) {
+                        writelog(iip.getIp() + " on '" + iip.getDateString() + "'", false);
+                    }
+                } else {
+                    //Invalid amount of arguments, print out usage message
+                    sender.sendMessage("Usage: /iplist [player]");
+                }
+
+                return true;
+
+            } else if (commandName.equalsIgnoreCase("ipusers")) {
+
+                // Check arguments length
+                if (args.length == 1) {
+
+                    // Check if argument contains an IP
+                    if (args[0].contains(".")) {
+                        // Get userlist
+                        ArrayList<String> userlist = getFilehandler().getIpUserList(args[0]);
+                        // Check if any results
+                        if (userlist != null && userlist.size() > 0) {
+                            // Results found, printing
+                            writelog("Listing users with the ip '" + FileHandler.formatIP(args[0]) + "':", false);
+
+                            // String builder 
+                            StringBuilder sb = new StringBuilder();
+                            // Loop trough all names in the list
+                            for (String name : userlist) {
+
+                                // Checks if there should be a , added
+                                if (sb.length() > 0) {
+                                    sb.append(", ");
+                                }
+                                // Checks the length of the string, to make sure no data is lost
+                                if (sb.length() + 2 + name.length() > 280) {
+                                    // List to long, print results and reset list
+                                    writelog(sb.toString(), false);
+                                    sb = new StringBuilder().append(name);
+                                } else {
+                                    // String length is ok, append name
+                                    sb.append(name);
+                                }
+
+                            }
+                            // Print the rest of the string
+                            writelog(sb.toString(), false);
+                        } else {
+                            // No results, printing message
+                            writelog("IP not found!", false);
+                        }
+                        return true;
+                    }
+
+                    // Get target player
+                    Player targetPlayer = getServer().getPlayer(args[0]);
+                    // See if player exists
+                    if (targetPlayer == null) {
+
+                        // Print out message
+                        writelog("*** Player not online ***", false);
+
+                        // Get list with ip's , where ignoring the case
+                        ArrayList<IIP> iplist = getFilehandler().getUserIplist(args[0], true, getConfig().getMaxIpListSize());
+                        // Check if list is not empty
+                        if (iplist != null && iplist.size() > 0) {
+                            // Loop trough all ip's
+                            for (IIP ipp : iplist) {
+                                // gets a list of users with the given IP
+                                ArrayList<String> userlist = getFilehandler().getIpUserList(ipp.getIp());
+                                // There is atleast one, so no need for null check, print results
+                                writelog("Listing users with the ip '" + FileHandler.formatIP(ipp.getIp()) + "':", false);
+                                // String builder 
+                                StringBuilder sb = new StringBuilder();
+                                // Loop trough all names in the list
+                                for (String name : userlist) {
+
+                                    // Checks if there should be a , added
+                                    if (sb.length() > 0) {
+                                        sb.append(", ");
+                                    }
+                                    // Checks the length of the string, to make sure no data is lost
+                                    if (sb.length() + 2 + name.length() > 280) {
+                                        // List to long, print results and reset list
+                                        writelog(sb.toString(), false);
+                                        sb = new StringBuilder().append(name);
+                                    } else {
+                                        // String length is ok, append name
+                                        sb.append(name);
+                                    }
+
+                                }
+                                // Print the rest of the string
+                                writelog(sb.toString(), false);
+                            }
+                        } else {
+                            // Player not found
+                            writelog("Player not found!", false);
+                        }
+                        return true;
+                    }
+
+                    // Get list with users on the target's ip
+                    ArrayList<String> userlist = getFilehandler().getIpUserList(targetPlayer.getAddress().toString());
+                    // Will always have at least one (target itself) so no need for null check, Print results
+                    writelog("Listing users with the ip '" + FileHandler.formatIP(targetPlayer.getAddress().toString()) + "':", false);
+
+                    // String builder 
+                    StringBuilder sb = new StringBuilder();
+                    // Loop trough all names in the list
+                    for (String name : userlist) {
+
+                        // Checks if there should be a , added
+                        if (sb.length() > 0) {
+                            sb.append(", ");
+                        }
+                        // Checks the length of the string, to make sure no data is lost
+                        if (sb.length() + 2 + name.length() > 280) {
+                            // List to long, print results and reset list
+                            writelog(sb.toString(), false);
+                            sb = new StringBuilder().append(name);
+                        } else {
+                            // String length is ok, append name
+                            sb.append(name);
+                        }
+
+                    }
+                    // Print the rest of the string
+                    writelog(sb.toString(), false);
+                } else {
+                    // Invalid amount of arguments, print out usage message
+                    sender.sendMessage("Usage: /ipusers [player]");
+                }
+                return true;
+            }
         }
         return false;
     }

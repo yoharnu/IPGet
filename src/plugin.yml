@@ -1,6 +1,6 @@
 name: IPGet
 main: org.yoharnu.IPGet.IPGet
-version: 0.7
+version: 0.8
 author: Yoharnu (0.6+ by Hretsam)
 commands:
    ip:
