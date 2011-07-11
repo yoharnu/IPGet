@@ -1,7 +1,7 @@
 name: IPGet
 main: org.yoharnu.IPGet.IPGet
-version: 0.6
-author: Yoharnu (0.6 by Hretsam)
+version: 0.7
+author: Yoharnu (0.6+ by Hretsam)
 commands:
    ip:
     description: Shows a player's IP.

@@ -1,7 +1,8 @@
 package org.yoharnu.IPGet;
 
 import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.List;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerListener;
@@ -9,9 +10,6 @@ import org.bukkit.event.player.PlayerListener;
 public class IPPlayerListener extends PlayerListener {
 
     public static IPGet plugin;
-//    public String callingPlayerName;
-//    private File configFile;
-//    private File logsFolder;
 
     public IPPlayerListener(IPGet instance) {
         plugin = instance;
@@ -19,60 +17,20 @@ public class IPPlayerListener extends PlayerListener {
 
     @Override
     public void onPlayerJoin(PlayerJoinEvent event) {
+        // Get player
         Player player = event.getPlayer();
-//        String playerName = player.getName();
 
-        IPGet.getPlugin().getFilehandler().addIp(player.getName(), player.getAddress().toString(), new Date().getTime());
+        // Check if should do warning, and if player is new
+        if (plugin.getConfig().doWarnOnFirstJoin() && !plugin.getFilehandler().isUserAlreadyLogged(player.getName())) {
+            // Get all connected players to the ip of the new user
+            List<String> users = plugin.getFilehandler().getIpUserList(player.getAddress().toString());
+            // If none (player itself not added yet) no warning
+            if (users != null && users.size() > 0) {
+                plugin.sendWarningMessage(ChatColor.RED + "[IPGet] The IP of player " + player.getName() + " is used by " + users.size() + " other user(s)!");
+            }
+        }
 
-//        
-//        logsFolder = new File(plugin.getDataFolder(), "logs");
-//        if (!logsFolder.exists()) {
-//            logsFolder.mkdirs();
-//        }
-//        configFile = new File(plugin.getDataFolder(), "logs/" + playerName + ".log");
-//        try {
-//            configFile.createNewFile();
-//        } catch (IOException e) {
-//        }
-//        FileInputStream fstream = null;
-//        try {
-//            fstream = new FileInputStream(configFile);
-//        } catch (FileNotFoundException e1) {
-//        }
-//        DataInputStream in = new DataInputStream(fstream);
-//        String tempFile = "";
-//        String newline = System.getProperty("line.separator");
-//        try {
-//            while (in.available() != 0) {
-//                tempFile += in.readLine() + newline;
-//            }
-//        } catch (IOException e1) {
-//        }
-//        FileOutputStream out;
-//        PrintStream p;
-//        try {
-//            out = new FileOutputStream(configFile);
-//            p = new PrintStream(out);
-//            p.println(tempFile + getDateString() + " - " + player.getAddress());
-//            p.close();
-//        } catch (FileNotFoundException e) {
-//        }
-    }
-
-    public static String getDateString() {
-        GregorianCalendar now = new GregorianCalendar();
-        String date = "";
-        date += now.get(GregorianCalendar.MONTH) + 1;
-        date += " ";
-        date += now.get(GregorianCalendar.DAY_OF_MONTH);
-        date += " ";
-        date += now.get(GregorianCalendar.YEAR);
-        date += " : ";
-        date += now.get(GregorianCalendar.HOUR);
-        date += ":";
-        date += now.get(GregorianCalendar.MINUTE);
-        date += ":";
-        date += now.get(GregorianCalendar.SECOND);
-        return date;
+        // Add player to log file
+        plugin.getFilehandler().addIp(player.getName(), player.getAddress().toString(), new Date().getTime());
     }
 }

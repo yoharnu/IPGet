@@ -61,7 +61,7 @@ public class FileHandler {
      * @return 
      */
     public ArrayList<IIP> getUserIplist(String username, boolean forceCaseCheck) {
-        if (forceCaseCheck){
+        if (forceCaseCheck) {
             username = checkCaseIndependant(username);
         }
         // Get all ip's
@@ -158,5 +158,17 @@ public class FileHandler {
             }
         }
         return username;
+    }
+
+    public boolean isUserAlreadyLogged(String username) {
+        // Get all ip's
+        List<String> keys = userlog.getKeys("users");
+        
+        // Checks if the username is in the list
+        if (keys.contains(username)) {
+            return true;
+        }
+        // if not in the list, return false
+        return false;
     }
 }
