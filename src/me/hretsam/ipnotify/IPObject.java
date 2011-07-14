@@ -1,4 +1,4 @@
-package org.yoharnu.IPGet;
+package me.hretsam.ipnotify;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -8,7 +8,7 @@ import java.util.Date;
  *
  * @author Hretsam
  */
-public class IIP {
+public class IPObject {
 
     private String ip;
     private Long date;
@@ -19,7 +19,7 @@ public class IIP {
      * @param ip
      * @param date 
      */
-    public IIP(String ip, Long date) {
+    public IPObject(String ip, Long date) {
         if (ip.contains("_")) {
             ip = ip.replaceAll("_", "\\.");
         }
@@ -50,7 +50,7 @@ public class IIP {
      * @return 
      */
     public String getDateString() {
-        String pattern = IPGet.getPlugin().getConfig().getDateSyntax();
+        String pattern = IPNotify.getPlugin().getConfig().getDateSyntax();
         DateFormat dateFormat = new SimpleDateFormat(pattern);
         return dateFormat.format(date);
     }
@@ -71,5 +71,4 @@ public class IIP {
     public String toString() {
         return ip + " '" + getDateString() + "'";
     }
-    
 }

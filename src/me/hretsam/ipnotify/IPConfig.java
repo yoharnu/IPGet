@@ -1,4 +1,4 @@
-package org.yoharnu.IPGet;
+package me.hretsam.ipnotify;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,7 +11,7 @@ import org.bukkit.util.config.Configuration;
  *
  * @author Hretsam
  */
-public class IPGetConfig {
+public class IPConfig {
 
     private final String configfilename = "config.yml";
     private String selfnode;
@@ -21,7 +21,7 @@ public class IPGetConfig {
     private boolean warnOnFirstJoin;
     private int maxIpListSize;
 
-    public IPGetConfig(File datafolder) throws IOException {
+    public IPConfig(File datafolder) throws IOException {
         if (!datafolder.exists()) {
             datafolder.mkdirs();
         }
@@ -32,7 +32,7 @@ public class IPGetConfig {
             // Copys the config file from within this jar (default package) and writes it to the datafolder.
             configfile.createNewFile();
             try {
-                InputStream stream = IPGet.class.getResourceAsStream("/config.yml");
+                InputStream stream = IPNotify.class.getResourceAsStream("/config.yml");
                 OutputStream out = new FileOutputStream(configfile);
 
                 byte[] buf = new byte[1024];
@@ -42,10 +42,10 @@ public class IPGetConfig {
                 }
                 stream.close();
                 out.close();
-                IPGet.writelog("Config file not found, created new file", false);
+                IPNotify.writelog("Config file not found, created new file", false);
             } catch (IOException iex) {
-                IPGet.writelog("Cannot create config file! " + iex.getMessage(), true);
-                IPGet.getPlugin().getServer().getPluginManager().disablePlugin(IPGet.getPlugin());
+                IPNotify.writelog("Cannot create config file! " + iex.getMessage(), true);
+                IPNotify.getPlugin().getServer().getPluginManager().disablePlugin(IPNotify.getPlugin());
             }
         }
 
@@ -64,15 +64,15 @@ public class IPGetConfig {
 
         // Checks for the config version
         if (config.getInt("configversion", 0) < 2) {
-            IPGet.writelog("Your using an old config file, please update!", true);
+            IPNotify.writelog("Your using an old config file, please update!", true);
         }
 
         // Loads all values, default value only used when key not found!
         dateSyntax = config.getString("date syntax", "dd-MMM-yyyy hh:mm");
 
-        selfnode = config.getString("self node", "IPGet.self");
-        othernode = config.getString("other node", "IPGet.other");
-        warningnode = config.getString("warning node", "IPGet.warning");
+        selfnode = config.getString("self node", "IPNotify.self");
+        othernode = config.getString("other node", "IPNotify.other");
+        warningnode = config.getString("warning node", "IPNotify.warning");
 
         warnOnFirstJoin = config.getBoolean("warn on first join", true);
 

@@ -1,4 +1,4 @@
-package org.yoharnu.IPGet;
+package me.hretsam.ipnotify;
 
 import java.util.Date;
 import java.util.List;
@@ -9,9 +9,9 @@ import org.bukkit.event.player.PlayerListener;
 
 public class IPPlayerListener extends PlayerListener {
 
-    public static IPGet plugin;
+    public static IPNotify plugin;
 
-    public IPPlayerListener(IPGet instance) {
+    public IPPlayerListener(IPNotify instance) {
         plugin = instance;
     }
 
@@ -26,7 +26,7 @@ public class IPPlayerListener extends PlayerListener {
             List<String> users = plugin.getFilehandler().getIpUserList(player.getAddress().toString());
             // If none (player itself not added yet) no warning
             if (users != null && users.size() > 0) {
-                plugin.sendWarningMessage(ChatColor.RED + "[IPGet] The IP of player " + player.getName() + " is used by " + users.size() + " other user(s)!");
+                plugin.sendWarningMessage(ChatColor.RED + "[IPNotify] The IP of player " + player.getName() + " is used by " + users.size() + " other user(s)!");
             }
         }
 

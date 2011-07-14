@@ -1,7 +1,7 @@
-name: IPGet
-main: org.yoharnu.IPGet.IPGet
-version: 0.8
-author: Yoharnu (0.6+ by Hretsam)
+name: IPNotify
+main: me.hretsam.ipnotify.IPNotify
+version: 1.0
+author: Hretsam (Yoharnu till 0.5 (IPGet))
 commands:
    ip:
     description: Shows a player's IP.
@@ -14,3 +14,11 @@ commands:
    ipusers:
     description: Shows a list of all users that use the same ip as the given user
     usage: /ipusers <player>
+    
+   ipcheck:
+    description: Checks the ip of the user against all known ip's of banned users.
+    usage: /ipusers <player>
+
+   aipban:
+    description: Bans the ip, and returns all associated names. If last banrelated is true, it will auto ban all names on the list.
+    usage: /aipban <playername|ip> [banRelated]

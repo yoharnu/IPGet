@@ -14,11 +14,11 @@ configversion: 2
 
 ## This node is to get information about yourself.
 ## Like your own ip, or connected accounts to own ip address
-self node: IPGet.self
+self node: IPNotify.self
 ## This node is to get information about someone else
-other node: IPGet.other
+other node: IPNotify.other
 ## Node to get the warning messages
-warning node: IPGet.warning
+warning node: IPNotify.warning
 
 ## This is the maximum size of the iplist (for command /iplist)
 max iplist size: 6

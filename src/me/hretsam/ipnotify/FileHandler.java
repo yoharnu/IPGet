@@ -1,12 +1,14 @@
-package org.yoharnu.IPGet;
+package me.hretsam.ipnotify;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.util.config.Configuration;
 
 /**
@@ -74,10 +76,7 @@ public class FileHandler {
      * @param forceCaseCheck (use this when your not sure the casing is right)
      * @return 
      */
-    public ArrayList<IIP> getUserIplist(String username, boolean forceCaseCheck, int maxSize) {
-        if (forceCaseCheck) {
-            username = checkCaseIndependant(username);
-        }
+    public ArrayList<IPObject> getUserIplist(String username, int maxSize) {
         // Get all ip's
         List<String> keys = userlog.getKeys("users." + username + ".ip");
         // Check if there are ip's
@@ -85,17 +84,16 @@ public class FileHandler {
             return null;
         }
         // Create the return list
-        ArrayList<IIP> iplist = new ArrayList<IIP>(keys.size());
+        ArrayList<IPObject> iplist = new ArrayList<IPObject>(keys.size());
         // Go past every ip to get the data, and put it in the list
         for (String ip : keys) {
-            iplist.add(new IIP(ip, Long.parseLong(userlog.getString("users." + username + ".ip." + ip, "0"))));
-
+            iplist.add(new IPObject(ip, Long.parseLong(userlog.getString("users." + username + ".ip." + ip, "0"))));
         }
 
         Collections.sort(iplist, comparator);
 
         // return the list
-        return new ArrayList<IIP>(iplist.subList(0, (iplist.size() < maxSize ? iplist.size() : maxSize)));
+        return new ArrayList<IPObject>(iplist.subList(0, (iplist.size() < maxSize ? iplist.size() : maxSize)));
     }
 
     /**
@@ -161,7 +159,7 @@ public class FileHandler {
      * @param username
      * @return 
      */
-    private String checkCaseIndependant(String username) {
+    public String checkCaseIndependant(String username) {
         // Get all ip's
         List<String> keys = userlog.getKeys("users");
         // Check if there are ip's
@@ -177,6 +175,11 @@ public class FileHandler {
         return username;
     }
 
+    /**
+     * Checks if the users is already logged
+     * @param username
+     * @return 
+     */
     public boolean isUserAlreadyLogged(String username) {
         // Get all ip's
         List<String> keys = userlog.getKeys("users");
@@ -188,12 +191,127 @@ public class FileHandler {
         // if not in the list, return false
         return false;
     }
+
+    /**
+     * Gets a list of players who's used an IP that is banned directly or indirectly (usernames)
+     * @return 
+     */
+    public List<String> getIndirectlyBannedUserList() {
+
+        // Get IP list
+        List<String> bannedIps = getMCBannedIpsList();
+        List<String> bannedNames = getMCBannedNamesList();
+
+        // Get banned names
+        for (String name : bannedNames) {
+            // Get right cased name
+            name = checkCaseIndependant(name);
+            // Get all ip's
+            List<String> keys = userlog.getKeys("users." + name + ".ip");
+            // Check if there are ip's
+            if (keys == null) {
+                continue;
+            }
+            // If any logged ips add them to the bannedIps list
+            for (String key : keys) {
+                // Set ip syntax
+                key.replaceAll("_", "\\.");
+                // Add
+                bannedIps.add(key);
+            }
+        }
+
+        // Create a new list for the names of players who aren't banned
+        // But an/the ip they used is.
+        List<String> namesWithBannedIpUsage = new ArrayList<String>();
+        // Loops trough all ips that are in the bannedIps list
+        for (String ip : bannedIps) {
+            // Gets all names that are used by the given ipo
+            for (String name : getIpUserList(ip)) {
+                // Convert to lowercase (thats how mc stores it)
+                name = name.toLowerCase();
+                // Check if the name is not already banned
+                if (!bannedNames.contains(name) && !namesWithBannedIpUsage.contains(name)) {
+                    // Add to list
+                    namesWithBannedIpUsage.add(name);
+                }
+            }
+        }
+
+        //Return the list
+        return namesWithBannedIpUsage;
+    }
+
+    /**
+     * This returns a list with all ips that are in the banned-ips.txt
+     * It uses the reader as its in the ServerConfigurationManager
+     * @return 
+     */
+    private List<String> getMCBannedIpsList() {
+        // Make a list
+        List<String> bannedIps = new ArrayList<String>();
+        try {
+            //Open reader and get the file (from a mc method)
+            BufferedReader bufferedreader = new BufferedReader(
+                    new FileReader(((CraftServer) IPNotify.getPlugin().getServer()).getHandle().server.a("banned-ips.txt")));
+            // Init input string
+            String s = "";
+            // Reader
+            while ((s = bufferedreader.readLine()) != null) {
+                // Add line to list
+                bannedIps.add(s.trim().toLowerCase());
+            }
+            // Close reader
+            bufferedreader.close();
+        } catch (Exception exception) {
+            IPNotify.writelog("Failed to load ip ban list: " + exception, true);
+        }
+        return bannedIps;
+    }
+
+    /**
+     * This returns a list with all names that are in the banned-player.txt
+     * It uses the reader as its in the ServerConfigurationManager
+     * @return 
+     */
+    private List<String> getMCBannedNamesList() {
+        // Make a list
+        List<String> bannedNames = new ArrayList<String>();
+        try {
+            //Open reader and get the file (from a mc method)
+            BufferedReader bufferedreader = new BufferedReader(
+                    new FileReader(((CraftServer) IPNotify.getPlugin().getServer()).getHandle().server.a("banned-players.txt")));
+            // Init input string
+            String s = "";
+            // Reader
+            while ((s = bufferedreader.readLine()) != null) {
+                // Add line to list
+                bannedNames.add(s.trim().toLowerCase());
+            }
+            // Close reader
+            bufferedreader.close();
+        } catch (Exception exception) {
+            IPNotify.writelog("Failed to load ban list: " + exception, true);
+        }
+        // Return
+        return bannedNames;
+    }
 }
 
-class IIPComparator implements Comparator<IIP> {
+/**
+ * Comparator for the IIP class
+ * @author Hretsam
+ */
+class IIPComparator implements Comparator<IPObject> {
 
+    /**
+     * Compares 2 IPP objects on their date, to see which one is more recent
+     * @param o1
+     * @param o2
+     * @return 
+     */
     @Override
-    public int compare(IIP o1, IIP o2) {
+    public int compare(IPObject o1, IPObject o2) {
         if (o1.getDateLong() < o2.getDateLong()) {
             return 1;
         } else {
