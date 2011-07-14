@@ -185,7 +185,7 @@ public class FileHandler {
         List<String> keys = userlog.getKeys("users");
 
         // Checks if the username is in the list
-        if (keys.contains(username)) {
+        if (keys != null && keys.contains(username)) {
             return true;
         }
         // if not in the list, return false
